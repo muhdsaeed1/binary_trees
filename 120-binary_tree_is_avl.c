@@ -1,65 +1,50 @@
 #include "binary_trees.h"
 
 /**
- * binary_tree_is_avl - finds if a binary tree is an avl
- * @tree: pointer to the root node of the tree
+ * sorted_array_to_avl - builds an AVL tree from an array
+ * @array: a pointer to the first element of the array to be converted
+ * @size: number of elements in the array
  *
- * Return: 1 if tree is avl
- *         0 otherwise
+ * Return: a pointer to the root node of the created AVL tree
+ *         NULL on failure
  */
-int binary_tree_is_avl(const binary_tree_t *tree)
+avl_t *sorted_array_to_avl(int *array, size_t size)
 {
-	if (!tree)
-		return (0);
+	avl_t *tree = NULL;
+	size_t middle;
 
-	return (btia_helper(tree, INT_MIN, INT_MAX));
+	if (!array)
+		return (NULL);
+	middle = (size - 1) / 2;
+	tree = binary_tree_node(NULL, array[middle]);
+
+	sata_helper(&tree, array, -1, middle);
+	sata_helper(&tree, array, middle, size);
+
+	return (tree);
 }
 
 /**
- * btia_helper - helper that finds if a binary tree is an avl
- * @tree: pointer to the root node of the tree
- * @min: minimum value
- * @max: maximum value
- *
- * Return: 1 if tree is avl
- *         0 otherwise
+ * sata_helper - helper that builds an AVL tree from an array
+ * @root: double pointer to the root node of the subtree
+ * @array: a pointer to the first element of the array to be converted
+ * @lo: lower bound index
+ * @hi: upper bound index
  */
-int btia_helper(const binary_tree_t *tree, int min, int max)
+void sata_helper(avl_t **root, int *array, size_t lo, size_t hi)
 {
-	int path_l, path_r;
+	avl_t *new = NULL;
+	size_t middle;
 
-	if (!tree)
-		return (1);
-	if (tree->n < min || tree->n > max)
-		return (0);
-
-	path_l = tree->left ? 1 + binary_tree_height(tree->left) : 0;
-	path_r = tree->right ? 1 + binary_tree_height(tree->right) : 0;
-
-	if (abs(path_l - path_r) > 1)
-		return (0);
-
-	return (btia_helper(tree->left, min, tree->n - 1) &&
-		btia_helper(tree->right, tree->n + 1, max));
-	/* This is part of the BST check logic */
-}
-
-/**
- * binary_tree_height - measures the height of a binary tree
- * @tree: tree to measure the height of
- *
- * Return: height of the tree
- *         0 if tree is NULL
- */
-size_t binary_tree_height(const binary_tree_t *tree)
-{
-	size_t height_l = 0;
-	size_t height_r = 0;
-
-	if (!tree)
-		return (0);
-
-	height_l = tree->left ? 1 + binary_tree_height(tree->left) : 0;
-	height_r = tree->right ? 1 + binary_tree_height(tree->right) : 0;
-	return (height_l > height_r ? height_l : height_r);
+	if (hi - lo > 1)
+	{
+		middle = (hi - lo) / 2 + lo;
+		new = binary_tree_node(*root, array[middle]);
+		if (array[middle] > (*root)->n)
+			(*root)->right = new;
+		else if (array[middle] < (*root)->n)
+			(*root)->left = new;
+		sata_helper(&new, array, lo, middle);
+		sata_helper(&new, array, middle, hi);
+	}
 }
